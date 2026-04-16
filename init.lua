@@ -52,6 +52,9 @@ vim.opt.mouse = 'a'
 vim.opt.expandtab = true
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
+vim.opt.colorcolumn = "79,88,120"
+vim.api.nvim_set_hl(0, 'ColorColumn', { ctermbg=0, bg='#333333' })
+
 
 -- --- НАСТРОЙКА ПЛАГИНОВ ---
 
