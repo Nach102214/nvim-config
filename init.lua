@@ -114,16 +114,52 @@ map('n', '<leader>f', ':TranslateW --target_lang=en<CR>', 'Translate to EN')
 map('v', '<leader>f', ':TranslateW --target_lang=en<CR>', 'Translate to EN')
 map('v', '<leader>r', ':TranslateR --target_lang=en<CR>', 'Replace with EN')
 
--- НАСТРОЙКА DAP
+-- НАСТРОЙКА ОТЛАДЧИКА (DAP)
 local ok_dap, dap = pcall(require, "dap")
 if ok_dap then
     local ok_ui, dapui = pcall(require, "dapui")
     if ok_ui then dapui.setup() end
-    dap.adapters.python = {
-        type = 'executable',
-        command = '/usr/bin/python3',
-        args = { '-m', 'debugpy.adapter' },
-    }
-end
 
+    -- Функция для автоматического поиска Python
+    local function get_python_path()
+        -- 1. Проверяем наличие venv или .venv в текущей папке проекта
+        local venv_path = os.getenv("VIRTUAL_ENV")
+        if venv_path then
+            return venv_path .. '/bin/python'
+        end
+        
+        -- 2. Ищем стандартные папки окружения в корне проекта
+        local cwd = vim.fn.getcwd()
+        if vim.fn.executable(cwd .. '/venv/bin/python') == 1 then
+            return cwd .. '/venv/bin/python'
+        elseif vim.fn.executable(cwd .. '/.venv/bin/python') == 1 then
+            return cwd .. '/.venv/bin/python'
+        else
+            -- 3. Если ничего не нашли, берем системный python3
+            return '/usr/bin/python3'
+        end
+    end
+
+    dap.adapters.python = {
+      type = 'executable',
+      command = get_python_path(),
+      args = { '-m', 'debugpy.adapter' },
+    }
+
+    dap.configurations.python = {
+      {
+        type = 'python',
+        request = 'launch',
+        name = "Launch file",
+        program = "${file}",
+        pythonPath = get_python_path(),
+      },
+    }
+
+    if ok_ui then
+        dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+        dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+        dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+    end
+end
 
