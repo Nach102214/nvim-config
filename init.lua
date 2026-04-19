@@ -113,6 +113,8 @@ map('v', '<leader>t', ':TranslateW --target_lang=ru<CR>', 'Translate to RU')
 map('n', '<leader>f', ':TranslateW --target_lang=en<CR>', 'Translate to EN')
 map('v', '<leader>f', ':TranslateW --target_lang=en<CR>', 'Translate to EN')
 map('v', '<leader>r', ':TranslateR --target_lang=en<CR>', 'Replace with EN')
+map('n', '<leader>fm', function() vim.lsp.buf.format({ async = true }) end, 'Format File')
+
 
 -- НАСТРОЙКА ОТЛАДЧИКА (DAP)
 local ok_dap, dap = pcall(require, "dap")
