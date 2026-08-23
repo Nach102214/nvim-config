@@ -29,7 +29,18 @@ require("lazy").setup({
     end
   },
   { "nvim-lualine/lualine.nvim", event = "VeryLazy", dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" } },
-  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+    {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    init = function()
+      vim.g.markdown_recommended_style = 0
+    end,
+    opts = {
+      highlight = {
+        enable = true, -- Принудительно включаем подсветку синтаксиса
+      },
+    },
+  },
   { "nvim-telescope/telescope.nvim", branch = "0.1.x", dependencies = { "nvim-lua/plenary.nvim" } },
   { "neovim/nvim-lspconfig" },
   { "williamboman/mason.nvim" },
