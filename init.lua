@@ -36,8 +36,12 @@ require("lazy").setup({
       vim.g.markdown_recommended_style = 0
     end,
     opts = {
+      -- Автоматически устанавливать парсеры для этих языков
+      ensure_installed = { "lua", "python", "bash", "markdown" },
+      -- Автоматически скачивать парсер, если открыт незнакомый файл
+      auto_install = true, 
       highlight = {
-        enable = true, -- Принудительно включаем подсветку синтаксиса
+        enable = true,
       },
     },
   },
@@ -55,6 +59,14 @@ require("lazy").setup({
   { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" } },
   { "nvim-neotest/nvim-nio" },
   { 'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons' },
+  {
+    "rmagatti/auto-session",
+    lazy = false, -- Плагин должен запускаться сразу, чтобы восстановить сессию
+    opts = {
+      suppress_dirs = { "~/", "~/Downloads", "/" }, -- Не сохранять сессии в корневых папках
+      auto_clean_after_session_restore = true,      -- Чистить старый кэш после восстановления
+    }
+  },
   { "Exafunction/codeium.nvim", dependencies = { "nvim-lua/plenary.nvim", "hrsh7th/nvim-cmp" } },
   {
     "voldikss/vim-translator",
@@ -330,6 +342,35 @@ map('n', '<leader>q', ':q<CR>', 'Закрыть')
 map('n', '<Tab>', ':bnext<CR>', 'Следующий буфер')
 map('n', '<S-Tab>', ':bprevious<CR>', 'Предыдущий буфер')
 
+map('n', '<leader>bd', function()
+    local bd = require("bufferline").banish or vim.cmd.bdelete
+    local current_buf = vim.api.nvim_get_current_buf()
+    
+    -- Переключаемся на следующий буфер, чтобы окно не закрылось
+    vim.cmd("bnext")
+    
+    -- Удаляем предыдущий буфер
+    local success, err = pcall(vim.cmd, "bdelete " .. current_buf)
+    if not success then
+        -- Если файл не сохранен, возвращаемся обратно и выводим ошибку
+        vim.cmd("bprevious")
+        vim.api.nvim_err_writeln("Ошибка: файл имеет несохраненные изменения! Сохраните через <leader>w или используйте :bd!")
+    end
+end, 'Закрыть текущий буфер')
+map('n', '<leader>rc', function()
+    -- Очищаем кэш текущего файла конфигурации в памяти Neovim
+    package.loaded["init"] = nil
+    
+    -- Выполняем файл заново
+    local success, err = pcall(vim.cmd, "source $MYVIMRC")
+    
+    if success then
+        print("🚀 Конфигурация успешно обновлена!")
+    else
+        vim.api.nvim_err_writeln("❌ Ошибка обновления: " .. tostring(err))
+    end
+end, 'Перезагрузить init.lua')
+
 -- Диагностика
 map('n', '[d', vim.diagnostic.goto_prev, 'Предыдущая ошибка')
 map('n', ']d', vim.diagnostic.goto_next, 'Следующая ошибка')
@@ -465,3 +506,14 @@ vim.keymap.set('i', '<C-Up>', '<C-Up>', { noremap = true })
 vim.keymap.set('i', '<C-Down>', '<C-Down>', { noremap = true })
 vim.keymap.set('i', '<C-Left>', '<C-Left>', { noremap = true })
 vim.keymap.set('i', '<C-Right>', '<C-Right>', { noremap = true })
+
+-- ============================================================================
+-- 9. АВТОСОХРАНЕНИЕ СЕССИИ ПРИ ЛЮБОМ ВЫХОДЕ
+-- ============================================================================
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  desc = "Автоматическое сохранение сессии перед закрытием редактора",
+  callback = function()
+    require("auto-session").SaveSession()
+  end,
+})
+
