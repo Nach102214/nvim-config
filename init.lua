@@ -19,11 +19,20 @@ vim.opt.rtp:prepend(lazypath)
 -- ============================================================================
 require("lazy").setup({
     -- Запуск блока кода внутри Markdown-файлов.
-    {
+{
   "michaelb/sniprun",
   build = "sh ./install.sh",
-  config = function() require("sniprun").setup() end
-    },
+  config = function()
+    require("sniprun").setup({
+      -- Секция Environment (переменные окружения)
+      env = {
+        CWD = function()
+          return vim.fn.getcwd()
+        end,
+      },
+    })
+  end
+},
 
   -- Тема
   { "catppuccin/nvim", name = "catppuccin", priority = 1000, lazy = false },
@@ -451,7 +460,7 @@ map("n", "<leader>x", function()
   
   if ft == "python" then
     -- Обычный запуск для Python-файлов
-    vim.cmd("botright split | resize 12 | term python3 %")
+    vim.cmd("lcd %:p:h | botright split | resize 12 | term python3 %")
     vim.defer_fn(function() vim.cmd("wincmd k") end, 50)
   elseif ft == "markdown" then
     -- Умный запуск для Markdown: вытаскиваем только блоки python
