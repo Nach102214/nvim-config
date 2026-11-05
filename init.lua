@@ -1,6 +1,6 @@
--- ============================================================================
+-- ===========================================================================
 -- 1. УСТАНОВКА МЕНЕДЖЕРА ПЛАГИНОВ LAZY.NVIM
--- ============================================================================
+-- ===========================================================================
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
@@ -14,32 +14,20 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- ============================================================================
+-- ===========================================================================
 -- 2. СПИСОК УСТАНОВЛЕННЫХ ПЛАГИНОВ
--- ============================================================================
+-- ===========================================================================
 require("lazy").setup({
-    -- Запуск блока кода внутри Markdown-файлов.
-{
-  "michaelb/sniprun",
-  build = "sh ./install.sh",
-  config = function()
-    require("sniprun").setup({
-      -- Секция Environment (переменные окружения)
-      env = {
-        CWD = function()
-          return vim.fn.getcwd()
-        end,
-      },
-    })
-  end
-},
-
+  -- Запуск кода
+  {
+    "michaelb/sniprun",
+    build = "sh ./install.sh",
+    config = function() require("sniprun").setup({}) end
+  },
   -- Тема
   { "catppuccin/nvim", name = "catppuccin", priority = 1000, lazy = false },
-
   -- Комментарии
   { "numToStr/Comment.nvim", lazy = false, config = function() require("Comment").setup() end },
-
   -- Дерево файлов
   {
     "nvim-tree/nvim-tree.lua",
@@ -50,17 +38,13 @@ require("lazy").setup({
       require("nvim-tree").setup({ view = { width = 30 } })
     end,
   },
-
   -- Статусная строка
   { "nvim-lualine/lualine.nvim", event = "VeryLazy", dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" } },
-
   -- Синтаксис
   { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
-
   -- Поиск
   { "nvim-telescope/telescope.nvim", branch = "0.1.x", dependencies = { "nvim-lua/plenary.nvim" } },
-
-  -- LSP и автодополнение
+  -- LSP
   { "neovim/nvim-lspconfig" },
   { "williamboman/mason.nvim" },
   { "williamboman/mason-lspconfig.nvim" },
@@ -71,18 +55,14 @@ require("lazy").setup({
   { "L3MON4D3/LuaSnip" },
   { "rafamadriz/friendly-snippets" },
   { "saadparwaiz1/cmp_luasnip" },
-
   -- Отладчик
   { "mfussenegger/nvim-dap" },
   { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" } },
   { "nvim-neotest/nvim-nio" },
-
   -- Буферы
   { "akinsho/bufferline.nvim", version = "*", dependencies = "nvim-tree/nvim-web-devicons" },
-
-  -- AI автодополнение
+  -- AI
   { "Exafunction/codeium.nvim", dependencies = { "nvim-lua/plenary.nvim", "hrsh7th/nvim-cmp" } },
-
   -- Переводчик
   {
     "voldikss/vim-translator",
@@ -91,52 +71,33 @@ require("lazy").setup({
         let g:translator_default_engines = ['google', 'bing']
         let g:translator_source_lang = 'auto'
         let g:translator_default_target_lang = 'ru'
-        let g:translator_window_max_width = 80
-        let g:translator_window_max_height = 20
       ]])
     end,
   },
-
-  -- Просмотр Markdown и Mermaid в браузере
+  -- Markdown
   {
     "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    cmd = { "MarkdownPreviewToggle" },
     ft = { "markdown" },
     build = function() vim.fn["mkdp#util#install"]() end,
-    init = function()
-      vim.g.mkdp_auto_start = 0
-      vim.g.mkdp_auto_close = 1
-      vim.g.mkdp_refresh_slow = 0
-    end,
-    config = function()
-      vim.keymap.set("n", "<leader>mk", ":MarkdownPreviewToggle<CR>", { silent = true, desc = "Предпросмотр MD/Mermaid" })
-    end,
+    init = function() vim.g.mkdp_auto_start = 0; vim.g.mkdp_auto_close = 1 end,
+    config = function() vim.keymap.set("n", "<leader>mk", ":MarkdownPreviewToggle<CR>", {silent = true}) end,
   },
-
-  -- Эмодзи (поиск и вставка) — только для markdown
+  -- Эмодзи
   {
     "allaman/emoji.nvim",
     ft = "markdown",
-    dependencies = {
-      "hrsh7th/nvim-cmp",
-      "nvim-telescope/telescope.nvim",
-    },
-    opts = {
-      enable_cmp_integration = true,
-    },
-    config = function(_, opts)
+    dependencies = {"hrsh7th/nvim-cmp", "nvim-telescope/telescope.nvim"},
+    opts = {enable_cmp_integration = true},
+    config = function(_, opts) 
       require("emoji").setup(opts)
       require("telescope").load_extension("emoji")
-      -- Добавляем источник emoji в cmp ТОЛЬКО для markdown,
-      -- не трогая глобальные настройки cmp.
       local cmp = require("cmp")
-      cmp.setup.filetype({ "markdown" }, {
+      cmp.setup.filetype({"markdown"}, {
         sources = cmp.config.sources({
-          { name = "nvim_lsp" },
-          { name = "luasnip" },
-          { name = "emoji" },
+          { name = "nvim_lsp" }, { name = "luasnip" }, { name = "emoji" }
         }, {
-          { name = "buffer" },
+          { name = "buffer" }
         }),
       })
     end,
@@ -147,9 +108,9 @@ require("lazy").setup({
   git = { timeout = 120000 },
 })
 
--- ============================================================================
+-- ===========================================================================
 -- 3. ОСНОВНЫЕ НАСТРОЙКИ РЕДАКТОРА
--- ============================================================================
+-- ===========================================================================
 vim.g.mapleader = " "
 vim.opt.termguicolors = true
 vim.opt.number = true
@@ -159,8 +120,6 @@ vim.opt.expandtab = true
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.clipboard = "unnamedplus"
-
--- Кодировки
 vim.opt.encoding = "utf-8"
 vim.opt.fileencodings = "ucs-bom,utf-8,cp1251,koi8-r,cp866,latin1"
 vim.opt.bomb = false
@@ -170,7 +129,6 @@ vim.env.PYTHONIOENCODING = "utf-8"
 vim.opt.colorcolumn = "79,88,120"
 vim.api.nvim_set_hl(0, "ColorColumn", { ctermbg = 0, bg = "#333333" })
 
--- Автоудаление терминальных буферов
 vim.api.nvim_create_autocmd("TermOpen", {
   pattern = "*",
   callback = function()
@@ -197,9 +155,9 @@ vim.api.nvim_create_autocmd("WinClosed", {
   end,
 })
 
--- ============================================================================
--- 4. НАСТРОЙКА ПЛАГИНОВ
--- ============================================================================
+-- ===========================================================================
+-- 4. НАСТРОЙКА ПЛАГИНОВ (LSP, CMP, Bufferline)
+-- ===========================================================================
 local ok_cat, _ = pcall(require, "catppuccin")
 if ok_cat then vim.cmd.colorscheme("catppuccin-mocha") end
 
@@ -210,11 +168,7 @@ local cmp_status_ok, cmp = pcall(require, "cmp")
 if cmp_status_ok then
   pcall(require("luasnip.loaders.from_vscode").lazy_load)
   cmp.setup({
-    snippet = {
-      expand = function(args)
-        require("luasnip").lsp_expand(args.body)
-      end,
-    },
+    snippet = { expand = function(args) require("luasnip").lsp_expand(args.body) end },
     mapping = cmp.mapping.preset.insert({
       ["<C-b>"] = cmp.mapping.scroll_docs(-4),
       ["<C-f>"] = cmp.mapping.scroll_docs(4),
@@ -229,61 +183,112 @@ if cmp_status_ok then
         end
       end, { "i", "s" }),
     }),
-    sources = cmp.config.sources(
-      { { name = "nvim_lsp" }, { name = "luasnip" } },
-      { { name = "buffer" } }
-    ),
+    sources = cmp.config.sources({ { name = "nvim_lsp" }, { name = "luasnip" } }, { { name = "buffer" } }),
     completion = { keyword_length = 1, trigger_character = { "." } },
   })
+end
+
+-- ===========================================================================
+-- 5. НАСТРОЙКА LSP И ПЕРЕВОДЧИК (Shift+K)
+-- ===========================================================================
+-- Функции перевода (должны быть ДО LspAttach)
+local function mymemory_translate(text, source_lang, target_lang, callback)
+  local url = string.format(
+    "https://api.mymemory.translated.net/get?q=%s&langpair=%s|%s&de=nach10@mail.ru", 
+    vim.uri_encode(text), source_lang, target_lang
+  )
+  vim.fn.jobstart({"curl", "-s", "-L", "--max-time", "15", url}, {
+    on_stdout = function(_, data)
+      if not data or #data == 0 then callback(nil) return end
+      local raw = table.concat(data, "\n")
+      local ok, json = pcall(vim.json.decode, raw)
+      if ok and json and json.responseData and json.responseData.translatedText then
+        callback(json.responseData.translatedText)
+      else
+        callback(nil)
+      end
+    end,
+    on_exit = function(_, code) if code ~= 0 then callback(nil) end end,
+  })
+end
+
+local function show_translation_window(src, tgt, translated)
+  local buf = vim.api.nvim_create_buf(false, true)
+  local lines = {" Перевод:", ""}
+  for line in translated:gmatch("[^\n]+") do table.insert(lines, " " .. line) end
+  local win_id = vim.api.nvim_open_win(buf, true, {
+    relative = "cursor", row = 1, col = 0,
+    width = math.min(#translated + 4, 75),
+    height = #lines + 1,
+    style = "minimal", border = "rounded",
+    title = string.format(" [%s → %s] ", src:upper(), tgt:upper()),
+    title_pos = "center",
+  })
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.defer_fn(function()
+    if vim.api.nvim_win_is_valid(win_id) then vim.api.nvim_win_close(win_id, true) end
+    if vim.api.nvim_buf_is_valid(buf) then vim.api.nvim_buf_delete(buf, {}) end
+  end, 8000)
 end
 
 local ok_lsp, mason_lsp = pcall(require, "mason-lspconfig")
 if ok_lsp then
   require("mason").setup()
-  mason_lsp.setup({
-    ensure_installed = { "pyright", "ruff", "bashls" },
-    automatic_installation = true,
-  })
+  mason_lsp.setup({ensure_installed = {"pyright", "ruff", "bashls"}, automatic_installation = true})
   local capabilities = vim.lsp.protocol.make_client_capabilities()
-  if cmp_status_ok then
-    capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
-  end
-  for _, server in ipairs({ "pyright", "ruff", "bashls" }) do
-    local config = { capabilities = capabilities }
+  if cmp_status_ok then capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities) end
+
+  for _, server in ipairs({"pyright", "ruff", "bashls"}) do
+    local config = {capabilities = capabilities}
     if server == "pyright" then
-      config.settings = {
-        python = {
-          analysis = {
-            autoSearchPaths = true,
-            diagnosticMode = "workspace",
-            typeCheckingMode = "basic",
-          },
-        },
-      }
+      config.settings = {python = {analysis = {autoSearchPaths = true, diagnosticMode = "workspace", typeCheckingMode = "basic"}}}
     end
     vim.lsp.config(server, config)
     vim.lsp.enable(server)
   end
 
-  -- Горячие клавиши LSP
+  -- Автокоманда LspAttach (Shift+K)
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
       local bufnr = args.buf
-      local map = function(mode, lhs, rhs, desc)
-        vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
-      end
+      local map = function(mode, lhs, rhs, desc) vim.keymap.set(mode, lhs, rhs, {buffer = bufnr, silent = true, desc = desc}) end
+      
       map("n", "gd", vim.lsp.buf.definition, "Перейти к определению")
       map("n", "gr", vim.lsp.buf.references, "Найти ссылки")
       map("n", "gI", vim.lsp.buf.implementation, "Перейти к реализации")
+      
+      -- Shift+K: Сбор текста изо всех окон и перевод
       map("n", "K", function()
-        vim.lsp.buf.hover({
-          border = "rounded",
-          max_width = 500,
-          max_height = 40,
-        })
-      end, "Документация")
+        vim.lsp.buf.hover({border = "rounded", max_width = 500, max_height = 40})
+        vim.defer_fn(function()
+          local main_win = vim.api.nvim_get_current_win()
+          local full_text = {}
+          for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            local config = vim.api.nvim_win_get_config(w)
+            if config.relative and config.relative ~= "" and w ~= main_win then
+              local buf = vim.api.nvim_win_get_buf(w)
+              local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+              for _, line in ipairs(lines) do
+                if line ~= "" and not line:match("^%s*$") then
+                  table.insert(full_text, line)
+                end
+              end
+            end
+          end
+          if #full_text > 0 then
+            for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+              local config = vim.api.nvim_win_get_config(w)
+              if config.relative and config.relative ~= "" then vim.api.nvim_win_close(w, true) end
+            end
+            local text_to_translate = table.concat(full_text, "\n")
+            mymemory_translate(text_to_translate, "en", "ru", function(result)
+              if result then vim.schedule(function() show_translation_window("en", "ru", result) end) end
+            end)
+          end
+        end, 100)
+      end, "Перевести документацию")
+      
       map("n", "<leader>ca", vim.lsp.buf.code_action, "Действия кода")
-      -- <leader>r НЕ переопределяем здесь — он уже задан в секции 6 (MyMemory)
     end,
   })
 end
@@ -304,63 +309,13 @@ end
 
 vim.diagnostic.config({ virtual_text = false, signs = true, underline = true, severity_sort = true })
 
--- ============================================================================
--- 5. ПЕРЕВОДЧИК (MyMemory API)
--- ============================================================================
-local function mymemory_translate(text, source_lang, target_lang, callback)
-  local langpair = source_lang .. "|" .. target_lang
-  local encoded_text = vim.uri_encode(text)
-  local encoded_pair = vim.uri_encode(langpair)
-  local url = string.format(
-    "https://api.mymemory.translated.net/get?q=%s&langpair=%s&de=%s",
-    encoded_text, encoded_pair, vim.uri_encode("nach10@mail.ru")
-  )
-
-  vim.fn.jobstart({ "curl", "-s", "-L", "--max-time", "15", url }, {
-    on_stdout = function(_, data)
-      if not data or #data == 0 then callback(nil) return end
-      local raw = table.concat(data, "\n")
-      local ok, json = pcall(vim.json.decode, raw)
-      if ok and json and json.responseData and json.responseData.translatedText then
-        callback(json.responseData.translatedText)
-      else
-        callback(nil)
-      end
-    end,
-    on_exit = function(_, code) if code ~= 0 then callback(nil) end end,
-  })
-end
+-- ===========================================================================
+-- 6. ПЕРЕВОДЧИК (Секция 5 для LSP, здесь — для обычного текста)
+-- ===========================================================================
+-- (Функции mymemory_translate и show_translation_window уже объявлены выше)
 
 local function detect_direction(text)
   if text:find("[а-яА-ЯёЁ]") then return "ru", "en" else return "en", "ru" end
-end
-
-local function show_translation_window(src, tgt, translated)
-  local buf = vim.api.nvim_create_buf(false, true)
-  local lines = { " Перевод:", "" }
-  for line in translated:gmatch("[^\n]+") do table.insert(lines, " " .. line) end
-  local win_id = vim.api.nvim_open_win(buf, true, {
-    relative = "cursor", row = 1, col = 0,
-    width = math.min(#translated + 4, 75),
-    height = #lines + 1,
-    style = "minimal", border = "rounded",
-    title = string.format(" [%s → %s] ", src:upper(), tgt:upper()),
-    title_pos = "center",
-  })
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.defer_fn(function()
-    if vim.api.nvim_win_is_valid(win_id) then vim.api.nvim_win_close(win_id, true) end
-    if vim.api.nvim_buf_is_valid(buf) then vim.api.nvim_buf_delete(buf, {}) end
-  end, 10000)
-end
-
-local function translate_current_diagnostic()
-  local line_diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
-  if #line_diagnostics == 0 then print("Диагностик не найдено") return end
-  table.sort(line_diagnostics, function(a, b) return a.severity < b.severity end)
-  mymemory_translate(line_diagnostics[1].message or "", "en", "ru", function(translated)
-    if translated then vim.schedule(function() show_translation_window("en", "ru", translated) end) end
-  end)
 end
 
 local function get_visual_selection()
@@ -371,6 +326,15 @@ local function get_visual_selection()
   lines[1] = string.sub(lines[1], start_pos[3])
   lines[#lines] = string.sub(lines[#lines], 1, end_pos[3])
   return table.concat(lines, "\n")
+end
+
+local function translate_current_diagnostic()
+  local line_diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
+  if #line_diagnostics == 0 then print("Диагностик не найдено") return end
+  table.sort(line_diagnostics, function(a, b) return a.severity < b.severity end)
+  mymemory_translate(line_diagnostics[1].message or "", "en", "ru", function(translated)
+    if translated then vim.schedule(function() show_translation_window("en", "ru", translated) end) end
+  end)
 end
 
 local function translate_visual_and_replace()
@@ -418,9 +382,9 @@ local function translate_word_under_cursor_replace()
   end)
 end
 
--- ============================================================================
--- 6. ГОРЯЧИЕ КЛАВИШИ
--- ============================================================================
+-- ===========================================================================
+-- 7. ГОРЯЧИЕ КЛАВИШИ
+-- ===========================================================================
 local function map(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { silent = true, desc = desc })
 end
@@ -457,27 +421,18 @@ map("n", "<leader>fm", function() vim.lsp.buf.format({ async = true }) end, "Ф�
 map("n", "<leader>x", function()
   vim.cmd("silent! update")
   local ft = vim.bo.filetype
-  
   if ft == "python" then
-    -- Обычный запуск для Python-файлов
     vim.cmd("lcd %:p:h | botright split | resize 12 | term python3 %")
     vim.defer_fn(function() vim.cmd("wincmd k") end, 50)
   elseif ft == "markdown" then
-    -- Умный запуск для Markdown: вытаскиваем только блоки python
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     local python_code = {}
     local in_block = false
-    
     for _, line in ipairs(lines) do
-      if line:match("^```python") then
-        in_block = true
-      elseif line:match("^```") and in_block then
-        in_block = false
-      elseif in_block then
-        table.insert(python_code, line)
-      end
+      if line:match("^```python") then in_block = true
+      elseif line:match("^```") and in_block then in_block = false
+      elseif in_block then table.insert(python_code, line) end
     end
-    
     if #python_code > 0 then
       local tmp = vim.fn.tempname() .. ".py"
       vim.fn.writefile(python_code, tmp)
@@ -524,19 +479,19 @@ end
 vim.keymap.set("n", "gcc", "<Plug>(comment_toggle_linewise_current)", { silent = true, remap = true })
 vim.keymap.set("n", "gc", "<Plug>(comment_toggle_linewise)", { silent = true, remap = true })
 vim.keymap.set("x", "gc", "<Plug>(comment_toggle_linewise_visual)", { silent = true, remap = true })
--- Настройки для SnipRun
+
+-- SnipRun
 vim.keymap.set("n", "<leader>sr", "<Cmd>SnipRun<CR>", { silent = true, desc = "Запустить строку кода" })
 vim.keymap.set("v", "<leader>sr", ":<C-u>SnipRun<CR>", { silent = true, desc = "Запустить выделенный код" })
 vim.keymap.set("n", "<leader>sc", "<Cmd>SnipReset<CR>", { silent = true, desc = "Очистить результаты SnipRun" })
 
--- ============================================================================
--- 7. ОТЛАДЧИК (DAP)
--- ============================================================================
+-- ===========================================================================
+-- 8. ОТЛАДЧИК (DAP)
+-- ===========================================================================
 local ok_dap, dap = pcall(require, "dap")
 if ok_dap then
   local ok_ui, dapui = pcall(require, "dapui")
   if ok_ui then dapui.setup() end
-
   local function get_python_path()
     local venv_path = os.getenv("VIRTUAL_ENV")
     if venv_path then return venv_path .. "/bin/python" end
@@ -546,7 +501,6 @@ if ok_dap then
     if vim.fn.executable("python3") == 1 then return vim.fn.exepath("python3") end
     return "/usr/bin/python3"
   end
-
   dap.adapters.python = function(cb, config)
     if config.request == "attach" then
       cb({ type = "server", port = assert(config.connect.port), host = config.connect.host or "127.0.0.1" })
@@ -554,7 +508,6 @@ if ok_dap then
       cb({ type = "executable", command = get_python_path(), args = { "-m", "debugpy.adapter" } })
     end
   end
-
   dap.configurations.python = {
     {
       type = "python",
@@ -565,13 +518,11 @@ if ok_dap then
       console = "integratedTerminal",
     },
   }
-
   if ok_ui then
     dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
     dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
     dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
   end
-
   vim.keymap.set("n", "<F5>", function() dap.continue() end, { desc = "Старт / Продолжить" })
   vim.keymap.set("n", "<F10>", function() dap.step_over() end, { desc = "Шаг с обходом" })
   vim.keymap.set("n", "<F11>", function() dap.step_into() end, { desc = "Шаг с заходом" })
@@ -581,9 +532,9 @@ if ok_dap then
   vim.keymap.set("n", "<leader>du", function() if ok_ui then require("dapui").toggle() end end, { desc = "Toggle DAP UI" })
 end
 
--- ============================================================================
--- 8. НАВИГАЦИЯ CTRL + СТРЕЛКИ
--- ============================================================================
+-- ===========================================================================
+-- 9. НАВИГАЦИЯ CTRL + СТРЕЛКИ
+-- ===========================================================================
 local function win_nav(mode, key, cmd)
   vim.keymap.set(mode, key, cmd, { silent = true })
 end
