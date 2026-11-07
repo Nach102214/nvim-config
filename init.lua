@@ -35,7 +35,20 @@ require("lazy").setup({
     config = function()
       vim.g.loaded_netrw = 1
       vim.g.loaded_netrwPlugin = 1
-      require("nvim-tree").setup({ view = { width = 30 } })
+      require("nvim-tree").setup({
+        view = { width = 30 },
+        git = {
+          enable = true,      -- Оставляем Git включенным (чтобы видеть измененные файлы кода)
+          timeout = 200,      -- Но ставим жесткий лимит в 200мс. Если Яндекс.Диск «задумается», NeoVim не зависнет!
+        },
+        filesystem_watchers = {
+          enable = false,     -- ОТКЛЮЧАЕМ авто-слежение. Клиент Яндекс.Диска постоянно меняет метаданные при синхронизации, это вешало систему.
+        },
+        filters = {
+          -- Скрываем только системный мусор, который не нужно трогать
+          custom = { "^%.git$", "^node_modules$", "^__pycache__$", "^%.pytest_cache$" },
+        },
+      })
     end,
   },
   -- Статусная строка
