@@ -54,7 +54,7 @@ require("lazy").setup({
   -- Статусная строка
   { "nvim-lualine/lualine.nvim", event = "VeryLazy", dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" } },
   -- Синтаксис
-  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+{ "nvim-treesitter/nvim-treesitter", branch = "master", build = ":TSUpdate" },
   -- Поиск
   { "nvim-telescope/telescope.nvim", branch = "0.1.x", dependencies = { "nvim-lua/plenary.nvim" } },
   -- LSP
